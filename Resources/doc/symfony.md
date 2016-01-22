@@ -2,7 +2,7 @@
 add to your composer.json
 ```json
 {
-    "require: {
+    "require": {
         "accesto/payum-pay-u": "dev-master",
         "payum/payum-bundle": "1.0.x-dev"
     }
