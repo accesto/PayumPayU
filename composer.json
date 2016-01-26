@@ -12,7 +12,6 @@
         "openpayu/openpayu": "^2.1"
     },
     "require-dev": {
-        "symfony/phpunit-bridge": "~2.7",
         "phpunit/phpunit": "4.3.*"
     },
     "config": {
