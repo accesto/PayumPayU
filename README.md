@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/accesto/PayumPayU.svg?branch=master)](https://travis-ci.org/accesto/PayumPayU)
+
 # PayU payment gateway for [payum](http://payum.org)
 
 This component allows to use PayU payments system with payum.
