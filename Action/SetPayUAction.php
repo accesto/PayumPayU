@@ -28,8 +28,8 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
      */
     protected $tokenFactory;
 
-    protected $api = array();
-
+    protected $api = array();   
+   
     /**
      * @var OpenPayUWrapper
      */
@@ -63,12 +63,12 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
      * {@inheritDoc}
      */
     public function execute($request)
-    {
+    {        
         RequestNotSupportedException::assertSupports($this, $request);
         $environment = $this->api['environment'];
         $signature = $this->api['signature_key'];
-        $posId = $this->api['pos_id'];
-
+        $posId = $this->api['pos_id'];        
+        
         $openPayU = $this->getOpenPayUWrapper() ? $this->getOpenPayUWrapper() : new OpenPayUWrapper($environment, $signature, $posId);
 
         $model = $request->getModel();
@@ -76,7 +76,8 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
         /**
          * @var Token $token
          */
-        $token = $request->getToken();
+        $token = $request->getToken();       
+        
         if ($model['orderId'] == null) {
             $order = array();
             $order['continueUrl'] = $token->getTargetUrl(); //customer will be redirected to this page after successfull payment
@@ -88,7 +89,7 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
             $order['currencyCode'] = $model['currencyCode'];
             $order['totalAmount'] = $model['totalAmount'];
             $order['extOrderId'] = $model['extOrderId']; //must be unique!
-            $order['buyer'] = $model['buyer'];
+            $order['buyer'] = $model['buyer'];            
 
             if (!array_key_exists('products', $model) || count($model['products']) == 0) {
                 $order['products'] = array(
@@ -102,8 +103,9 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
                 $order['products'] = $model['products'];
             }
 
-            $response = $openPayU->create($order)->getResponse();
-
+            $response = $openPayU->create($order)->getResponse();           
+            $model['payUResponse'] = $response;
+            
             if ($response && $response->status->statusCode == 'SUCCESS') {
                 $model['orderId'] = $response->orderId;
                 $request->setModel($model);
@@ -114,6 +116,8 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
             }
         } else {
             $response = $openPayU->retrieve($model['orderId'])->getResponse();
+            $model['payUResponse'] = $response;      
+            
             if ($response->status->statusCode == 'SUCCESS') {
                 $model['status'] = $response->orders[0]->status;
                 $request->setModel($model);
@@ -146,5 +150,5 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
     public function setOpenPayUWrapper($openPayUWrapper)
     {
         $this->openPayUWrapper = $openPayUWrapper;
-    }
+    }    
 }

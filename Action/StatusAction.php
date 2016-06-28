@@ -33,6 +33,13 @@ class StatusAction implements ActionInterface
         } elseif ($model['status'] == 'COMPLETED') {
             $request->markCaptured();
             return;
+        } elseif ($model['status'] == 'CANCELED') {
+            $request->markCanceled();
+            return;    
+        }
+         elseif ($model['status'] == 'REJECTED') {
+            $request->markFailed();
+            return;    
         }
 
         $request->markUnknown();

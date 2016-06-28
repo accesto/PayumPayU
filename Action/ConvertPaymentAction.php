@@ -41,6 +41,7 @@ class ConvertPaymentAction extends GatewayAwareAction
             'email' => $order->getClientEmail(),
             'firstName' => isset($d['firstName']) ? $d['firstName'] : '',
             'lastName' => isset($d['lastName']) ? $d['lastName'] : '',
+            'language' => $order->getLocale() ? substr($order->getLocale(), 0, 2) : '',
         );
         $details['status']  = 'NEW';
 
