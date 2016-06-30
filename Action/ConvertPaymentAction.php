@@ -1,4 +1,5 @@
 <?php
+
 namespace Accesto\Component\Payum\PayU\Action;
 
 use Accesto\Component\Payum\PayU\Model\Product;
@@ -10,13 +11,12 @@ use Payum\Core\Model\PaymentInterface;
 use Payum\Core\Request\Convert;
 
 /**
- * Class ConvertPaymentAction
- * @package Accesto\Component\Payum\PayU\Action
+ * Class ConvertPaymentAction.
  */
 class ConvertPaymentAction extends GatewayAwareAction
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @param Convert $request
      */
@@ -25,7 +25,7 @@ class ConvertPaymentAction extends GatewayAwareAction
         RequestNotSupportedException::assertSupports($this, $request);
 
         /**
-         * @var $order PaymentInterface
+         * @var PaymentInterface
          */
         $order = $request->getSource();
         $details = ArrayObject::ensureArrayObject($order->getDetails());
@@ -43,14 +43,13 @@ class ConvertPaymentAction extends GatewayAwareAction
             'lastName' => isset($d['lastName']) ? $d['lastName'] : '',
             'language' => $order->getLocale() ? substr($order->getLocale(), 0, 2) : '',
         );
-        $details['status']  = 'NEW';
+        $details['status'] = 'NEW';
 
         $request->setResult((array) $details);
     }
 
-
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function supports($request)
     {

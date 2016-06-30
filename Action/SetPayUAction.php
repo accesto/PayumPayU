@@ -18,8 +18,7 @@ use Payum\Core\Security\GenericTokenFactoryAwareInterface;
 use Payum\Core\Security\GenericTokenFactoryInterface;
 
 /**
- * Class SetPayUAction
- * @package Accesto\Component\Payum\PayU\Action
+ * Class SetPayUAction.
  */
 class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenFactoryAwareInterface
 {
@@ -28,8 +27,8 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
      */
     protected $tokenFactory;
 
-    protected $api = array();   
-   
+    protected $api = array();
+
     /**
      * @var OpenPayUWrapper
      */
@@ -37,8 +36,6 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
 
     /**
      * @param GenericTokenFactoryInterface $genericTokenFactory
-     *
-     * @return void
      */
     public function setGenericTokenFactory(GenericTokenFactoryInterface $genericTokenFactory = null)
     {
@@ -60,24 +57,24 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function execute($request)
-    {        
+    {
         RequestNotSupportedException::assertSupports($this, $request);
         $environment = $this->api['environment'];
         $signature = $this->api['signature_key'];
-        $posId = $this->api['pos_id'];        
-        
+        $posId = $this->api['pos_id'];
+
         $openPayU = $this->getOpenPayUWrapper() ? $this->getOpenPayUWrapper() : new OpenPayUWrapper($environment, $signature, $posId);
 
         $model = $request->getModel();
         $model = ArrayObject::ensureArrayObject($model);
-        /**
-         * @var Token $token
+        /*
+         * @var Token
          */
-        $token = $request->getToken();       
-        
+        $token = $request->getToken();
+
         if ($model['orderId'] == null) {
             $order = array();
             $order['continueUrl'] = $token->getTargetUrl(); //customer will be redirected to this page after successfull payment
@@ -89,23 +86,23 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
             $order['currencyCode'] = $model['currencyCode'];
             $order['totalAmount'] = $model['totalAmount'];
             $order['extOrderId'] = $model['extOrderId']; //must be unique!
-            $order['buyer'] = $model['buyer'];            
+            $order['buyer'] = $model['buyer'];
 
             if (!array_key_exists('products', $model) || count($model['products']) == 0) {
                 $order['products'] = array(
                     array(
                         'name' => $model['description'],
                         'unitPrice' => $model['totalAmount'],
-                        'quantity' => 1
-                    )
+                        'quantity' => 1,
+                    ),
                 );
             } else {
                 $order['products'] = $model['products'];
             }
 
-            $response = $openPayU->create($order)->getResponse();           
+            $response = $openPayU->create($order)->getResponse();
             $model['payUResponse'] = $response;
-            
+
             if ($response && $response->status->statusCode == 'SUCCESS') {
                 $model['orderId'] = $response->orderId;
                 $request->setModel($model);
@@ -116,18 +113,17 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
             }
         } else {
             $response = $openPayU->retrieve($model['orderId'])->getResponse();
-            $model['payUResponse'] = $response;      
-            
+            $model['payUResponse'] = $response;
+
             if ($response->status->statusCode == 'SUCCESS') {
                 $model['status'] = $response->orders[0]->status;
                 $request->setModel($model);
             }
         }
-
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function supports($request)
     {
@@ -150,5 +146,5 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
     public function setOpenPayUWrapper($openPayUWrapper)
     {
         $this->openPayUWrapper = $openPayUWrapper;
-    }    
+    }
 }
