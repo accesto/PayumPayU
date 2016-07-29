@@ -130,3 +130,18 @@ class UpdatePaymentStatus
     }
 }
 ```
+
+```yaml
+# Acme\PaymentBundle\Resources\config\services.yml
+
+acme_payment.listener.update_payment_status:
+        class: Acme\PaymentBundle\Event\Listener\UpdatePaymentStatus
+        tags:
+          - { name: kernel.event_listener, event: payum.gateway.post_execute, method: updateStatus }
+
+acme_payment.payu_gateway_factory:
+        class: Payum\Core\Bridge\Symfony\Builder\GatewayFactoryBuilder
+        arguments: [Accesto\Component\Payum\PayU\PayUGatewayFactory]
+        tags:
+            - { name: payum.gateway_factory_builder, factory: payu }
+```
