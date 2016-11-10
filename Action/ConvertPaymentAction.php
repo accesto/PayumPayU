@@ -41,12 +41,22 @@ class ConvertPaymentAction extends GatewayAwareAction
             'email' => $order->getClientEmail(),
             'firstName' => isset($d['firstName']) ? $d['firstName'] : '',
             'lastName' => isset($d['lastName']) ? $d['lastName'] : '',
+            'language' => $order->getLocale() ? substr($order->getLocale(), 0, 2) : '',
         );
         $details['status']  = 'NEW';
 
+        $details['settings'] = array(
+            'invoiceDisabled' => true
+        );
+
+        if ($order->getPaymentForm() == 'card') {
+            $details['payMethods'] = array(
+                'payMethod' => ['type' => 'PBL', 'value' => 'c']
+            );
+        }
+
         $request->setResult((array) $details);
     }
-
 
     /**
      * {@inheritDoc}

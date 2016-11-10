@@ -1,4 +1,5 @@
 <?php
+
 namespace Accesto\Component\Payum\PayU\Action;
 
 use Payum\Core\Action\ActionInterface;
@@ -9,29 +10,39 @@ use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Offline\Constants;
 
 /**
- * Class StatusAction
- * @package Accesto\Component\Payum\PayU\Action
+ * Class StatusAction.
  */
 class StatusAction implements ActionInterface
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function execute($request)
     {
-        /** @var $request GetStatusInterface */
+        /* @var $request GetStatusInterface */
         RequestNotSupportedException::assertSupports($this, $request);
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
 
         if (null === $model['status'] || 'NEW' == $model['status']) {
             $request->markNew();
+
             return;
         } elseif ($model['status'] == 'PENDING') {
             $request->markPending();
+
             return;
         } elseif ($model['status'] == 'COMPLETED') {
             $request->markCaptured();
+
+            return;
+        } elseif ($model['status'] == 'CANCELED') {
+            $request->markCanceled();
+
+            return;
+        } elseif ($model['status'] == 'REJECTED') {
+            $request->markFailed();
+
             return;
         }
 
@@ -39,7 +50,7 @@ class StatusAction implements ActionInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function supports($request)
     {

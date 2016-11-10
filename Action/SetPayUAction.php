@@ -77,6 +77,7 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
          * @var Token $token
          */
         $token = $request->getToken();
+
         if ($model['orderId'] == null) {
             $order = array();
             $order['continueUrl'] = $token->getTargetUrl(); //customer will be redirected to this page after successfull payment
@@ -89,6 +90,11 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
             $order['totalAmount'] = $model['totalAmount'];
             $order['extOrderId'] = $model['extOrderId']; //must be unique!
             $order['buyer'] = $model['buyer'];
+            $order['settings'] = $model['settings'];
+
+            if ($model['payMethods']) {
+                $order['payMethods'] = $model['payMethods'];
+            }
 
             if (!array_key_exists('products', $model) || count($model['products']) == 0) {
                 $order['products'] = array(
@@ -103,6 +109,7 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
             }
 
             $response = $openPayU->create($order)->getResponse();
+            $model['payUResponse'] = $response;
 
             if ($response && $response->status->statusCode == 'SUCCESS') {
                 $model['orderId'] = $response->orderId;
@@ -114,6 +121,8 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
             }
         } else {
             $response = $openPayU->retrieve($model['orderId'])->getResponse();
+            $model['payUResponse'] = $response;
+
             if ($response->status->statusCode == 'SUCCESS') {
                 $model['status'] = $response->orders[0]->status;
                 $request->setModel($model);

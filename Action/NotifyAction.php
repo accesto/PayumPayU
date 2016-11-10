@@ -12,12 +12,10 @@ use Payum\Core\Request\Notify;
 use Payum\Core\Request\Sync;
 
 /**
- * Class NotifyAction
- * @package Accesto\Component\Payum\PayU\Action
+ * Class NotifyAction.
  */
 class NotifyAction extends GatewayAwareAction implements ActionInterface
 {
-
     /**
      * @param mixed $request
      *
@@ -25,19 +23,18 @@ class NotifyAction extends GatewayAwareAction implements ActionInterface
      */
     public function execute($request)
     {
-        /** @var $request Notify */
+        /* @var $request Notify */
         RequestNotSupportedException::assertSupports($this, $request);
         $setPayU = new SetPayU($request->getToken());
-        $setPayU->setModel($request->getModel());;
+        $setPayU->setModel($request->getModel());
         $this->gateway->execute($setPayU);
         $status = new GetHumanStatus($request->getToken());
         $status->setModel($request->getModel());
         $this->gateway->execute($status);
     }
 
-
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function supports($request)
     {

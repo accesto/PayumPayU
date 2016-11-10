@@ -15,8 +15,7 @@ use Payum\Core\Request\Capture;
 use Payum\Core\Security\GenericTokenFactory;
 
 /**
- * Class CaptureAction
- * @package Accesto\Component\Payum\PayU\Action
+ * Class CaptureAction.
  */
 class CaptureAction extends GatewayAwareAction implements ActionInterface
 {
@@ -38,7 +37,7 @@ class CaptureAction extends GatewayAwareAction implements ActionInterface
     /**
      * @param mixed $request
      *
-     * @return boolean
+     * @return bool
      */
     public function supports($request)
     {
