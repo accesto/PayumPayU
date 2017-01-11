@@ -34,7 +34,7 @@ class NotifyActionTest extends GenericActionTest
 
         $gateway->expects($this->exactly(2))->method('execute')
             ->with(
-                $this->logicalOr (
+                $this->logicalOr(
                     $this->isInstanceOf('Accesto\Component\Payum\PayU\SetPayU'),
                     $this->isInstanceOf('Payum\Core\Request\GetHumanStatus')
                 )

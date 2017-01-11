@@ -49,7 +49,6 @@ class SetPayUActionTest extends GenericActionTest
         $request = new SetPayU($t);
         $request->setModel(new ArrayObject());
         $action->execute($request);
-
     }
 
     /**
