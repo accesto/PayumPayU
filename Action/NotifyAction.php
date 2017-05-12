@@ -32,6 +32,7 @@ class NotifyAction extends GatewayAwareAction implements ActionInterface
         ;
         $this->gateway->execute($setPayU);
         $status = new GetHumanStatus($request->getToken());
+        $status->setModel($request->getFirstModel());
         $status->setModel($request->getModel());
         $this->gateway->execute($status);
     }
