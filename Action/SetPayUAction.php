@@ -128,7 +128,6 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
                 $request->setModel($model);
             }
         }
-
     }
 
     /**
