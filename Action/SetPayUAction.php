@@ -18,8 +18,7 @@ use Payum\Core\Security\GenericTokenFactoryAwareInterface;
 use Payum\Core\Security\GenericTokenFactoryInterface;
 
 /**
- * Class SetPayUAction
- * @package Accesto\Component\Payum\PayU\Action
+ * Class SetPayUAction.
  */
 class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenFactoryAwareInterface
 {
@@ -37,8 +36,6 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
 
     /**
      * @param GenericTokenFactoryInterface $genericTokenFactory
-     *
-     * @return void
      */
     public function setGenericTokenFactory(GenericTokenFactoryInterface $genericTokenFactory = null)
     {
@@ -60,7 +57,7 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function execute($request)
     {
@@ -73,8 +70,8 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
 
         $model = $request->getModel();
         $model = ArrayObject::ensureArrayObject($model);
-        /**
-         * @var Token $token
+        /*
+         * @var Token
          */
         $token = $request->getToken();
 
@@ -90,19 +87,14 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
             $order['totalAmount'] = $model['totalAmount'];
             $order['extOrderId'] = $model['extOrderId']; //must be unique!
             $order['buyer'] = $model['buyer'];
-            $order['settings'] = $model['settings'];
-
-            if ($model['payMethods']) {
-                $order['payMethods'] = $model['payMethods'];
-            }
 
             if (!array_key_exists('products', $model) || count($model['products']) == 0) {
                 $order['products'] = array(
                     array(
                         'name' => $model['description'],
                         'unitPrice' => $model['totalAmount'],
-                        'quantity' => 1
-                    )
+                        'quantity' => 1,
+                    ),
                 );
             } else {
                 $order['products'] = $model['products'];
@@ -131,7 +123,7 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function supports($request)
     {
