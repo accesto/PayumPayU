@@ -23,14 +23,12 @@ class NotifyAction extends GatewayAwareAction implements ActionInterface
      */
     public function execute($request)
     {
-        /** @var $request Notify */
+        /* @var $request Notify */
         RequestNotSupportedException::assertSupports($this, $request);
         $setPayU = new SetPayU($request->getToken());
         $setPayU->setModel($request->getModel());
-        ;
         $this->gateway->execute($setPayU);
         $status = new GetHumanStatus($request->getToken());
-        $status->setModel($request->getFirstModel());
         $status->setModel($request->getModel());
         $this->gateway->execute($status);
     }
