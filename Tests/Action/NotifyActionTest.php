@@ -26,6 +26,7 @@ class NotifyActionTest extends GenericActionTest
 
     /**
      * @test
+     * @expectedException Payum\Core\Reply\HttpResponse
      */
     public function shouldExecuteGetHumanStatusAndSetPayU()
     {

@@ -10,6 +10,7 @@ use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\Request\GetHumanStatus;
 use Payum\Core\Request\Notify;
 use Payum\Core\Request\Sync;
+use Payum\Core\Reply\HttpResponse;
 
 /**
  * Class NotifyAction
@@ -19,7 +20,7 @@ class NotifyAction extends GatewayAwareAction implements ActionInterface
 {
 
     /**
-     * @param mixed $request
+     * @param Notify $request
      *
      * @throws \Payum\Core\Exception\RequestNotSupportedException if the action dose not support the request.
      */
@@ -29,12 +30,14 @@ class NotifyAction extends GatewayAwareAction implements ActionInterface
         RequestNotSupportedException::assertSupports($this, $request);
         $setPayU = new SetPayU($request->getToken());
         $setPayU->setModel($request->getModel());
-        ;
+        
         $this->gateway->execute($setPayU);
         $status = new GetHumanStatus($request->getToken());
         $status->setModel($request->getFirstModel());
         $status->setModel($request->getModel());
         $this->gateway->execute($status);
+    
+        throw new HttpResponse('OK', 200);
     }
 
 
