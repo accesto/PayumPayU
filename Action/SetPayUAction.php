@@ -102,6 +102,10 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
                 $order['products'] = $model['products'];
             }
 
+            if (isset($model['validityTime']) && is_numeric($model['validityTime'])) {
+                $order['validityTime'] = (int)$model['validityTime'];
+            }
+
             $response = $openPayU->create($order)->getResponse();
 
             if ($response && $response->status->statusCode == 'SUCCESS') {
