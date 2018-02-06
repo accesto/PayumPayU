@@ -91,7 +91,7 @@ class PayUGatewayFactoryTest extends \PHPUnit_Framework_TestCase
         $this->assertInternalType('array', $config);
         $this->assertArrayHasKey('payum.default_options', $config);
         $this->assertEquals(
-            array('environment' => 'secure', 'pos_id' => '', 'signature_key' => ''),
+            array('environment' => 'secure', 'pos_id' => '', 'signature_key' => '', 'card_token_encryption_key' => null),
             $config['payum.default_options']
         );
     }

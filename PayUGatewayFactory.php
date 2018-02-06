@@ -2,6 +2,7 @@
 
 namespace Accesto\Component\Payum\PayU;
 
+use Accesto\Component\Payum\PayU\Action\EncryptTokenAction;
 use Accesto\Component\Payum\PayU\Action\NotifyAction;
 use Accesto\Component\Payum\PayU\Action\SetPayUAction;
 use Accesto\Component\Payum\PayU\Action\StatusAction;
@@ -29,7 +30,8 @@ class PayUGatewayFactory extends GatewayFactory
             'payum.action.convert_payment' => new ConvertPaymentAction(),
             'payum.action.status' => new StatusAction(),
             'payum.action.set_payu' => new SetPayUAction(),
-            'payum.action.notify' => new NotifyAction()
+            'payum.action.encrypt_card_token' => new EncryptTokenAction(),
+            'payum.action.notify' => new NotifyAction(),
         ));
 
         if (false == $config['payum.api']) {
@@ -37,6 +39,7 @@ class PayUGatewayFactory extends GatewayFactory
                 'environment' => 'secure',
                 'pos_id' => '',
                 'signature_key' => '',
+                'card_token_encryption_key' => null,
             );
             $config->defaults($config['payum.default_options']);
             $config['payum.required_options'] = array('environment', 'pos_id', 'signature_key');
@@ -48,6 +51,7 @@ class PayUGatewayFactory extends GatewayFactory
                     'environment' => $config['environment'],
                     'pos_id' => $config['pos_id'],
                     'signature_key' => $config['signature_key'],
+                    'card_token_encryption_key' => $config['card_token_encryption_key'],
                 );
 
                 return $payuConfig;
