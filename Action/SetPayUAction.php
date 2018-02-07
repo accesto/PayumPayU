@@ -102,13 +102,27 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
                 $order['products'] = $model['products'];
             }
 
+            if (isset($model['payMethods'])) {
+                $order['payMethods'] = $model['payMethods'];
+            }
+
             if (isset($model['validityTime']) && is_numeric($model['validityTime'])) {
                 $order['validityTime'] = (int)$model['validityTime'];
+            }
+            if (isset($model['invoiceDisabled'])) {
+                $order['settings'] = [
+                    'invoiceDisabled' => $model['invoiceDisabled'],
+                ];
             }
 
             $response = $openPayU->create($order)->getResponse();
 
             if ($response && $response->status->statusCode == 'SUCCESS') {
+                $model['orderId'] = $response->orderId;
+                $request->setModel($model);
+
+                throw new HttpRedirect(isset($response->redirectUri) ? $response->redirectUri : $token->getTargetUrl());
+            } elseif ($response && $response->status->statusCode == 'WARNING_CONTINUE_3DS') {
                 $model['orderId'] = $response->orderId;
                 $request->setModel($model);
 
