@@ -11,14 +11,17 @@ class OpenPayUWrapper
     const RECURRING_FIRST = 'FIRST';
     const RECURRING_STANDARD = 'STANDARD';
 
-    public function __construct($environment, $signatureKey, $posId)
+    protected $oauthClientId;
+
+    protected $oauthSecret;
+
+    public function __construct($environment, $signatureKey, $posId, $oauthClientId = null, $oauthSecret = null)
     {
         \OpenPayU_Configuration::setEnvironment($environment);
         \OpenPayU_Configuration::setMerchantPosId($posId);
         \OpenPayU_Configuration::setSignatureKey($signatureKey);
-        \OpenPayU_Configuration::setOauthClientId('313851');
-        \OpenPayU_Configuration::setOauthClientSecret('709be1e5d787d8d393c886656b5d79f6');
-        \OpenPayU_Configuration::setOauthGrantType(\OauthGrantType::TRUSTED_MERCHANT);
+        $this->oauthClientId = $oauthClientId;
+        $this->oauthSecret = $oauthSecret;
     }
 
     public function create($order)
@@ -33,6 +36,9 @@ class OpenPayUWrapper
 
     public function retrievePayMethods($userId, $userEmail)
     {
+        \OpenPayU_Configuration::setOauthClientId($this->oauthClientId);
+        \OpenPayU_Configuration::setOauthClientSecret($this->oauthSecret);
+        \OpenPayU_Configuration::setOauthGrantType(\OauthGrantType::TRUSTED_MERCHANT);
         \OpenPayU_Configuration::setOauthEmail($userEmail);
         \OpenPayU_Configuration::setOauthExtCustomerId($userId);
 

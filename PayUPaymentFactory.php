@@ -28,7 +28,8 @@ class PayUPaymentFactory extends AbstractGatewayFactory
             ->scalarNode('environment')->isRequired()->defaultValue('secure')->end()
             ->scalarNode('pos_id')->isRequired()->cannotBeEmpty()->end()
             ->scalarNode('signature_key')->isRequired()->cannotBeEmpty()->end()
-            ->scalarNode('card_token_encryption_key')->defaultNull()->end()
+            ->scalarNode('oauth_client_id')->defaultNull()->end()
+            ->scalarNode('oauth_secret')->defaultNull()->end()
             ->end()
         ;
     }

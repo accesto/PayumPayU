@@ -11,6 +11,7 @@ use Payum\Core\ApiAwareInterface;
 use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\Exception\UnsupportedApiException;
+use Payum\Core\Model\PaymentInterface;
 use Payum\Core\Model\Token;
 use Payum\Core\Reply\HttpRedirect;
 use Payum\Core\Security\GenericTokenFactory;
@@ -69,84 +70,41 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
         $signature = $this->api['signature_key'];
         $posId = $this->api['pos_id'];
 
-        $openPayU = $this->getOpenPayUWrapper() ? $this->getOpenPayUWrapper() : new OpenPayUWrapper($environment, $signature, $posId);
+        $openPayU = $this->getOpenPayUWrapper() ? $this->getOpenPayUWrapper() : new OpenPayUWrapper(
+            $environment,
+            $signature,
+            $posId,
+            $this->api['oauth_client_id'],
+            $this->api['oauth_secret']
+        );
 
         $model = $request->getModel();
+        $firstModel = $request->getFirstModel();
         $model = ArrayObject::ensureArrayObject($model);
+
         /**
          * @var Token $token
          */
         $token = $request->getToken();
         if ($model['orderId'] == null) {
             $order = array();
-            $order['continueUrl'] = $token->getTargetUrl(); //customer will be redirected to this page after successfull payment
-            $order['notifyUrl'] = $this->tokenFactory->createNotifyToken($token->getGatewayName(),
-                $token->getDetails())->getTargetUrl();
-            $order['customerIp'] = $model['customerIp'];
-            $order['merchantPosId'] = $posId;
-            $order['description'] = $model['description'];
-            $order['currencyCode'] = $model['currencyCode'];
-            $order['totalAmount'] = $model['totalAmount'];
-            $order['extOrderId'] = $model['extOrderId']; //must be unique!
-            $order['buyer'] = $model['buyer'];
+            $order = $this->setUrls($token, $order);
+            $order = $this->setBaseData($model, $order, $posId);
+            $order = $this->setProducts($model, $order);
 
-            if (!array_key_exists('products', $model) || count($model['products']) == 0) {
-                $order['products'] = array(
-                    array(
-                        'name' => $model['description'],
-                        'unitPrice' => $model['totalAmount'],
-                        'quantity' => 1
-                    )
-                );
-            } else {
-                $order['products'] = $model['products'];
-            }
-
-            if (isset($model['payMethods'])) {
-                $order['payMethods'] = $model['payMethods'];
-            }
-
-            if (isset($model['validityTime']) && is_numeric($model['validityTime'])) {
-                $order['validityTime'] = (int)$model['validityTime'];
-            }
-            if (isset($model['invoiceDisabled'])) {
-                $order['settings'] = [
-                    'invoiceDisabled' => $model['invoiceDisabled'],
-                ];
-            }
             if (isset($model['recurring']) && $model['recurring'] == OpenPayUWrapper::RECURRING_STANDARD) {
-                $payMethods = $openPayU->retrievePayMethods($model['client_id'], $model['client_email'])->getResponse();
-                if (!isset($payMethods->cardTokens)) {
-                    throw new \InvalidArgumentException('Cannot make this recurring payment. Token for user does not exist');
-                }
-                $token = $this->findPrefferedToken($payMethods->cardTokens);
-                if (!$token) {
-                    throw new \InvalidArgumentException('Cannot make this recurring payment. Token for user does not exist');
-                }
-
-                $order['payMethods'] = [
-                    'payMethod' => [
-                        'value' => $token->value,
-                        'type' => 'CARD_TOKEN',
-                    ],
-                ];
+                $order = $this->setRecurringPayment($openPayU, $model, $order);
             }
 
             $response = $openPayU->create($order)->getResponse();
 
             if ($response && $response->status->statusCode == 'SUCCESS') {
-                $model['orderId'] = $response->orderId;
-                if (isset($response->payMethods) && isset($response->payMethods->payMethod)) {
-                    $model['cardToken'] = $response->payMethods->payMethod->value;
-                }
+                $this->updateModel($model, $response, $firstModel);
                 $request->setModel($model);
 
                 throw new HttpRedirect(isset($response->redirectUri) ? $response->redirectUri : $token->getTargetUrl());
             } elseif ($response && $response->status->statusCode == 'WARNING_CONTINUE_3DS') {
-                $model['orderId'] = $response->orderId;
-                if (isset($response->payMethods) && isset($response->payMethods->payMethod)) {
-                    $model['cardToken'] = $response->payMethods->payMethod->value;
-                }
+                $this->updateModel($model, $response, $firstModel);
                 $request->setModel($model);
 
                 throw new HttpRedirect($response->redirectUri);
@@ -154,10 +112,17 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
                 throw PayUException::newInstance($response->status);
             }
         } else {
-            $response = $openPayU->retrieve($model['orderId'])->getResponse();
-            if ($response->status->statusCode == 'SUCCESS') {
-                $model['status'] = $response->orders[0]->status;
-                $request->setModel($model);
+            $this->updateStatus($request, $openPayU, $model);
+        }
+    }
+
+    private function updateModel(&$model, $response, $firstModel = null)
+    {
+        $model['orderId'] = $response->orderId;
+        if (isset($response->payMethods) && isset($response->payMethods->payMethod)) {
+            $model['creditCardMaskedNumber'] = $response->payMethods->payMethod->card->number;
+            if ($firstModel instanceof PaymentInterface && $firstModel->getCreditCard()) {
+                $firstModel->getCreditCard()->setMaskedNumber($response->payMethods->payMethod->card->number);
             }
         }
     }
@@ -188,13 +153,13 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
         $this->openPayUWrapper = $openPayUWrapper;
     }
 
-    private function findPrefferedToken(array $tokens)
+    private function findPrefferedToken(array $tokens, $creditCardMaskedNumber = null)
     {
         if (!count($tokens)) {
             return;
         }
-        $tokens = array_filter($tokens, function ($token) {
-            return $token->status == 'ACTIVE';
+        $tokens = array_filter($tokens, function ($token) use ($creditCardMaskedNumber) {
+            return $token->status == 'ACTIVE' && (null == $creditCardMaskedNumber || $token->cardNumberMasked == $creditCardMaskedNumber);
         });
         if (!count($tokens)) {
             return;
@@ -207,5 +172,120 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
         }
 
         return reset($tokens);
+    }
+
+    /**
+     * @param $model
+     * @param $order
+     *
+     * @return mixed
+     */
+    private function setProducts($model, $order)
+    {
+        if (!array_key_exists('products', $model) || count($model['products']) == 0) {
+            $order['products'] = array(
+                array(
+                    'name' => $model['description'],
+                    'unitPrice' => $model['totalAmount'],
+                    'quantity' => 1
+                )
+            );
+        } else {
+            $order['products'] = $model['products'];
+        }
+
+        return $order;
+    }
+
+    /**
+     * @param $token
+     * @param $order
+     *
+     * @return mixed
+     */
+    private function setUrls($token, $order)
+    {
+        $order['continueUrl'] = $token->getTargetUrl(); //customer will be redirected to this page after successfull payment
+        $order['notifyUrl'] = $this->tokenFactory->createNotifyToken($token->getGatewayName(),
+            $token->getDetails())->getTargetUrl();
+
+        return $order;
+    }
+
+    /**
+     * @param $model
+     * @param $order
+     * @param $posId
+     *
+     * @return mixed
+     */
+    private function setBaseData($model, $order, $posId)
+    {
+        $order['customerIp'] = $model['customerIp'];
+        $order['merchantPosId'] = $posId;
+        $order['description'] = $model['description'];
+        $order['currencyCode'] = $model['currencyCode'];
+        $order['totalAmount'] = $model['totalAmount'];
+        $order['extOrderId'] = $model['extOrderId']; //must be unique!
+        $order['buyer'] = $model['buyer'];
+        if (isset($model['payMethods'])) {
+            $order['payMethods'] = $model['payMethods'];
+        }
+
+        if (isset($model['validityTime']) && is_numeric($model['validityTime'])) {
+            $order['validityTime'] = (int)$model['validityTime'];
+        }
+        if (isset($model['invoiceDisabled'])) {
+            $order['settings'] = [
+                'invoiceDisabled' => $model['invoiceDisabled'],
+            ];
+        }
+
+        return $order;
+    }
+
+    /**
+     * @param $openPayU
+     * @param $model
+     * @param $order
+     *
+     * @return array
+     */
+    private function setRecurringPayment($openPayU, $model, $order)
+    {
+        $payMethods = $openPayU->retrievePayMethods($model['client_id'], $model['client_email'])->getResponse();
+        if (!isset($payMethods->cardTokens)) {
+            throw new \InvalidArgumentException('Cannot make this recurring payment. Token for user does not exist');
+        }
+        $cardToken = $this->findPrefferedToken($payMethods->cardTokens,
+            isset($model['creditCardMaskedNumber']) ? $model['creditCardMaskedNumber'] : null);
+        if (!$cardToken) {
+            throw new \InvalidArgumentException('Cannot make this recurring payment. Token for user does not exist');
+        }
+        $order['recurring'] = $model['recurring'];
+
+        $order['payMethods'] = [
+            'payMethod' => [
+                'value' => $cardToken->value,
+                'type' => 'CARD_TOKEN',
+            ],
+        ];
+
+        return $order;
+    }
+
+    /**
+     * @param $request
+     * @param $openPayU
+     * @param $model
+     */
+    private function updateStatus($request, $openPayU, $model)
+    {
+        $response = $openPayU->retrieve($model['orderId'])->getResponse();
+        if ($response->status->statusCode == 'SUCCESS') {
+            $model['status'] = $response->orders[0]->status;
+
+            $request->setModel($model);
+        }
     }
 }

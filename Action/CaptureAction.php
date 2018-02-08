@@ -31,6 +31,7 @@ class CaptureAction extends GatewayAwareAction implements ActionInterface
         $details = ArrayObject::ensureArrayObject($request->getModel());
 
         $setPayU = new SetPayU($request->getToken());
+        $setPayU->setModel($request->getFirstModel());
         $setPayU->setModel($details);
         $this->gateway->execute($setPayU);
     }
