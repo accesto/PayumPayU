@@ -9,4 +9,8 @@ use Payum\Core\Request\Generic;
  */
 class EncryptToken extends Generic
 {
+    public function __construct($token)
+    {
+        parent::__construct(['value' => $token]);
+    }
 }

@@ -4,6 +4,7 @@ namespace Accesto\Component\Payum\PayU\Action;
 use Accesto\Component\Payum\PayU\CardTokenEncryptor;
 use Accesto\Component\Payum\PayU\CreditCardEncrypted;
 use Accesto\Component\Payum\PayU\Model\Product;
+use Accesto\Component\Payum\PayU\OpenPayUWrapper;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\Action\GatewayAwareAction;
 use Payum\Core\ApiAwareInterface;
@@ -58,37 +59,15 @@ class ConvertPaymentAction extends GatewayAwareAction implements ApiAwareInterfa
         $details['customerIp'] = array_key_exists('REMOTE_ADDR', $_SERVER) ? $_SERVER['REMOTE_ADDR'] : null;
         $d = $order->getDetails();
         if (isset($d['recurring']) && $d['recurring']) {
-            if (!$order->getCreditCard()) {
-                throw new \InvalidArgumentException('Credit card token required for recurring transaction');
+            if ($d['recurring'] != OpenPayUWrapper::RECURRING_FIRST) {
+                $details['recurring'] = $d['recurring'];
             }
-            $details['recurring'] = 'STANDARD';
-            $creditCard = $order->getCreditCard();
-            if ($creditCard instanceof CreditCardEncrypted) {
-                if (!$order->getCreditCard()->getEncryptedToken()) {
-                    throw new \InvalidArgumentException('Credit card encrypted token required for recurring transaction');
-                }
-                $token = CardTokenEncryptor::decrypt(
-                    $creditCard->getEncryptedToken(),
-                    $this->api['card_token_encryption_key'],
-                    $creditCard->getSalt()
-                );
-            } else {
-                if (!$creditCard->getToken()) {
-                    throw new \InvalidArgumentException('Credit card token required for recurring transaction');
-                }
-                $token = $creditCard->getToken();
-            }
-            $details['payMethods'] = [
-                'payMethod' => [
-                    'value' => $token,
-                    'type' => 'CARD_TOKEN',
-                ],
-            ];
         }
         $details['buyer'] = array(
             'email' => $order->getClientEmail(),
             'firstName' => isset($d['firstName']) ? $d['firstName'] : '',
             'lastName' => isset($d['lastName']) ? $d['lastName'] : '',
+            'extCustomerId' => $details['client_id'],
         );
         $details['status']  = 'NEW';
 

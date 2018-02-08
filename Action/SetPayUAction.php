@@ -114,16 +114,39 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
                     'invoiceDisabled' => $model['invoiceDisabled'],
                 ];
             }
+            if (isset($model['recurring']) && $model['recurring'] == OpenPayUWrapper::RECURRING_STANDARD) {
+                $payMethods = $openPayU->retrievePayMethods($model['client_id'], $model['client_email'])->getResponse();
+                if (!isset($payMethods->cardTokens)) {
+                    throw new \InvalidArgumentException('Cannot make this recurring payment. Token for user does not exist');
+                }
+                $token = $this->findPrefferedToken($payMethods->cardTokens);
+                if (!$token) {
+                    throw new \InvalidArgumentException('Cannot make this recurring payment. Token for user does not exist');
+                }
+
+                $order['payMethods'] = [
+                    'payMethod' => [
+                        'value' => $token->value,
+                        'type' => 'CARD_TOKEN',
+                    ],
+                ];
+            }
 
             $response = $openPayU->create($order)->getResponse();
 
             if ($response && $response->status->statusCode == 'SUCCESS') {
                 $model['orderId'] = $response->orderId;
+                if (isset($response->payMethods) && isset($response->payMethods->payMethod)) {
+                    $model['cardToken'] = $response->payMethods->payMethod->value;
+                }
                 $request->setModel($model);
 
                 throw new HttpRedirect(isset($response->redirectUri) ? $response->redirectUri : $token->getTargetUrl());
             } elseif ($response && $response->status->statusCode == 'WARNING_CONTINUE_3DS') {
                 $model['orderId'] = $response->orderId;
+                if (isset($response->payMethods) && isset($response->payMethods->payMethod)) {
+                    $model['cardToken'] = $response->payMethods->payMethod->value;
+                }
                 $request->setModel($model);
 
                 throw new HttpRedirect($response->redirectUri);
@@ -163,5 +186,26 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
     public function setOpenPayUWrapper($openPayUWrapper)
     {
         $this->openPayUWrapper = $openPayUWrapper;
+    }
+
+    private function findPrefferedToken(array $tokens)
+    {
+        if (!count($tokens)) {
+            return;
+        }
+        $tokens = array_filter($tokens, function ($token) {
+            return $token->status == 'ACTIVE';
+        });
+        if (!count($tokens)) {
+            return;
+        }
+
+        foreach ($tokens as $token) {
+            if ($token->preferred) {
+                return $token;
+            }
+        }
+
+        return reset($tokens);
     }
 }
