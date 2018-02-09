@@ -45,6 +45,16 @@ class ConvertPaymentAction extends GatewayAwareAction
         );
         $details['status'] = 'NEW';
 
+        $details['settings'] = array(
+            'invoiceDisabled' => true
+        );
+
+        if ($order->getPaymentForm() == 'card') {
+            $details['payMethods'] = array(
+                'payMethod' => ['type' => 'PBL', 'value' => 'c']
+            );
+        }
+
         $request->setResult((array) $details);
     }
 
