@@ -88,6 +88,12 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
             $order['extOrderId'] = $model['extOrderId']; //must be unique!
             $order['buyer'] = $model['buyer'];
 
+            $order['settings'] = $model['settings'];
+
+            if ($model['payMethods']) {
+                $order['payMethods'] = $model['payMethods'];
+            }
+
             if (!array_key_exists('products', $model) || count($model['products']) == 0) {
                 $order['products'] = array(
                     array(
