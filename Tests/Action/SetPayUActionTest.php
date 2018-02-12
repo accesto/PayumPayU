@@ -86,7 +86,9 @@ class SetPayUActionTest extends GenericActionTest
         $openpayu = $this->getMock('Accesto\Component\Payum\PayU\OpenPayUWrapper', array('create', 'retrieve'), array(
             'secure',
             '13a980d4f851f3d9a1cfc792fb1f5e50',
-            '145227'
+            '145227',
+            '145227',
+            '13a980d4f851f3d9a1cfc792fb1f5e50',
         ));
         $openpayu->method('create')->with($this->anything())->willReturn(
             $response
@@ -121,7 +123,9 @@ class SetPayUActionTest extends GenericActionTest
         $action->setApi(array(
             'environment' => 'secure',
             'pos_id' => '145227',
-            'signature_key' => '13a980d4f851f3d9a1cfc792fb1f5e50'
+            'signature_key' => '13a980d4f851f3d9a1cfc792fb1f5e50',
+            'oauth_client_id' => '145227',
+            'oauth_secret' => '13a980d4f851f3d9a1cfc792fb1f5e50',
         ));
         $action->setGenericTokenFactory($genericTokenFactory);
         $action->setOpenPayUWrapper($openpayu);

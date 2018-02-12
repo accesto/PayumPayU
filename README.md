@@ -8,3 +8,4 @@ It can be used both in pure php or in symfony (Payum bundle preferable).
 ## Documentation
 * [standalone](Resources/doc/standalone.md)
 * [symfony](Resources/doc/symfony.md)
+* [symfony with Payum2](Resources/doc/symfonyAndPayum2.md)
