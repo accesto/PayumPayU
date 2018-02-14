@@ -96,7 +96,11 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
                 $order = $this->setRecurringPayment($openPayU, $model, $order);
             }
 
-            $response = $openPayU->create($order)->getResponse();
+            try {
+                $response = $openPayU->create($order)->getResponse();
+            } catch (\OpenPayU_Exception_Request $exception) {
+                throw PayUException::newInstance(null, $firstModel);
+            }
 
             if ($response && $response->status->statusCode == 'SUCCESS') {
                 $this->updateModel($model, $response, $firstModel);
@@ -109,7 +113,7 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
 
                 throw new HttpRedirect($response->redirectUri);
             } else {
-                throw PayUException::newInstance($response->status);
+                throw PayUException::newInstance($response->status, $firstModel);
             }
         } else {
             $this->updateStatus($request, $openPayU, $model);
