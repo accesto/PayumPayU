@@ -244,6 +244,9 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
                 'invoiceDisabled' => $model['invoiceDisabled'],
             ];
         }
+        if (isset($model['language'])) {
+            $order['buyer']['language'] = $model['language'];
+        }
 
         return $order;
     }
