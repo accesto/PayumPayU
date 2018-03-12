@@ -98,6 +98,7 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
 
             try {
                 $response = $openPayU->create($order)->getResponse();
+                $model['payUResponse'] = $response;
             } catch (\OpenPayU_Exception_Request $exception) {
                 throw PayUException::newInstance(null, $firstModel);
             }
