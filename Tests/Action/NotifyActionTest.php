@@ -33,9 +33,10 @@ class NotifyActionTest extends GenericActionTest
         $action = new NotifyAction();
         $gateway = $this->createGatewayMock();
 
-        $gateway->expects($this->exactly(2))->method('execute')
+        $gateway->expects($this->exactly(3))->method('execute')
             ->with(
                 $this->logicalOr(
+                    $this->isInstanceOf('Payum\Core\Request\GetHttpRequest'),
                     $this->isInstanceOf('Accesto\Component\Payum\PayU\SetPayU'),
                     $this->isInstanceOf('Payum\Core\Request\GetHumanStatus')
                 )
