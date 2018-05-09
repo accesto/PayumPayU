@@ -98,6 +98,7 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
 
             try {
                 $response = $openPayU->create($order)->getResponse();
+                $model['payUResponse'] = $response;
             } catch (\OpenPayU_Exception_Request $exception) {
                 throw PayUException::newInstance(null, $firstModel);
             }
@@ -210,10 +211,8 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
     private function setUrls($token, $order)
     {
         $order['continueUrl'] = $token->getTargetUrl(); //customer will be redirected to this page after successfull payment
-        $order['notifyUrl'] = $this->tokenFactory->createNotifyToken(
-            $token->getGatewayName(),
-            $token->getDetails()
-        )->getTargetUrl();
+        $order['notifyUrl'] = $this->tokenFactory->createNotifyToken($token->getGatewayName(),
+            $token->getDetails())->getTargetUrl();
 
         return $order;
     }
@@ -266,10 +265,8 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
         if (!isset($payMethods->cardTokens)) {
             throw new \InvalidArgumentException('Cannot make this recurring payment. Token for user does not exist');
         }
-        $cardToken = $this->findPrefferedToken(
-            $payMethods->cardTokens,
-            isset($model['creditCardMaskedNumber']) ? $model['creditCardMaskedNumber'] : null
-        );
+        $cardToken = $this->findPrefferedToken($payMethods->cardTokens,
+            isset($model['creditCardMaskedNumber']) ? $model['creditCardMaskedNumber'] : null);
         if (!$cardToken) {
             throw new \InvalidArgumentException('Cannot make this recurring payment. Token for user does not exist');
         }

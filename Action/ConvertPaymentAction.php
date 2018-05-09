@@ -5,6 +5,7 @@ use Accesto\Component\Payum\PayU\Model\Product;
 use Accesto\Component\Payum\PayU\OpenPayUWrapper;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\Action\GatewayAwareAction;
+use Payum\Core\ApiAwareInterface;
 use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\Exception\UnsupportedApiException;
