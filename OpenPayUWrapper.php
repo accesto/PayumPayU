@@ -29,6 +29,11 @@ class OpenPayUWrapper
         return \OpenPayU_Order::create($order);
     }
 
+    public function refund($id, $description = 'Refund')
+    {
+        return \OpenPayU_Refund::create($id, $description);
+    }
+
     public function retrieve($id)
     {
         return \OpenPayU_Order::retrieve($id);

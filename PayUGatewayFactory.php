@@ -3,6 +3,8 @@
 namespace Accesto\Component\Payum\PayU;
 
 use Accesto\Component\Payum\PayU\Action\NotifyAction;
+use Accesto\Component\Payum\PayU\Action\RefundAction;
+use Accesto\Component\Payum\PayU\Action\RefundPayUAction;
 use Accesto\Component\Payum\PayU\Action\SetPayUAction;
 use Accesto\Component\Payum\PayU\Action\StatusAction;
 use Accesto\Component\Payum\PayU\Action\CaptureAction;
@@ -29,7 +31,9 @@ class PayUGatewayFactory extends GatewayFactory
             'payum.action.convert_payment' => new ConvertPaymentAction(),
             'payum.action.status' => new StatusAction(),
             'payum.action.notify' => new NotifyAction(),
+            'payum.action.refund' => new RefundAction(),
             'payum.action.set_payu' => new SetPayUAction(),
+            'payum.action.refund_payu' => new RefundPayUAction(),
         ));
 
         if (false == $config['payum.api']) {

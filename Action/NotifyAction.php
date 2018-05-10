@@ -2,11 +2,13 @@
 
 namespace Accesto\Component\Payum\PayU\Action;
 
+use Accesto\Component\Payum\PayU\RefundPayU;
 use Accesto\Component\Payum\PayU\SetPayU;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\Action\GatewayAwareAction;
 use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
+use Payum\Core\Request\GetHttpRequest;
 use Payum\Core\Request\GetHumanStatus;
 use Payum\Core\Request\Notify;
 use Payum\Core\Request\Sync;
@@ -28,10 +30,25 @@ class NotifyAction extends GatewayAwareAction implements ActionInterface
     {
         /** @var $request Notify */
         RequestNotSupportedException::assertSupports($this, $request);
-        $setPayU = new SetPayU($request->getToken());
-        $setPayU->setModel($request->getModel());
-        
-        $this->gateway->execute($setPayU);
+        $getHttpRequest = new GetHttpRequest();
+        $this->gateway->execute($getHttpRequest);
+        $content = json_decode($getHttpRequest->content, true);
+        if ($content && isset($content['refund'])) {
+            $refundPayU = new RefundPayU($request->getToken());
+            $refundPayU->setModel($request->getFirstModel());
+            $model = $request->getModel();
+            $model['refund'] = $content['refund'];
+            $refundPayU->setModel($model);
+
+            $this->gateway->execute($refundPayU);
+            $request->setModel($refundPayU->getModel());
+        } else {
+            $setPayU = new SetPayU($request->getToken());
+            $setPayU->setModel($request->getModel());
+
+            $this->gateway->execute($setPayU);
+        }
+
         $status = new GetHumanStatus($request->getToken());
         $status->setModel($request->getFirstModel());
         $status->setModel($request->getModel());

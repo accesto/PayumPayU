@@ -31,7 +31,7 @@ payum:
 ```
 
 ## Usage
- 
+
 ### Prepare payment
 
 ```php
