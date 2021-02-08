@@ -210,7 +210,7 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
      */
     private function setUrls($token, $order)
     {
-        $order['continueUrl'] = $token->getTargetUrl(); //customer will be redirected to this page after successfull payment
+        $order['continueUrl'] = $token->getAfterUrl() ?: $token->getTargetUrl(); //customer will be redirected to this page after successfull payment
         $order['notifyUrl'] = $this->tokenFactory->createNotifyToken($token->getGatewayName(),
             $token->getDetails())->getTargetUrl();
 
