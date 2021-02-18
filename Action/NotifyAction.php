@@ -44,7 +44,9 @@ class NotifyAction extends GatewayAwareAction implements ActionInterface
             $request->setModel($refundPayU->getModel());
         } else {
             $setPayU = new SetPayU($request->getToken());
-            $setPayU->setModel($request->getModel());
+            $model = $request->getModel();
+            $model['orderId'] = $content['order']['orderId'] ?? null;
+            $setPayU->setModel($model);
 
             $this->gateway->execute($setPayU);
         }
@@ -53,7 +55,7 @@ class NotifyAction extends GatewayAwareAction implements ActionInterface
         $status->setModel($request->getFirstModel());
         $status->setModel($request->getModel());
         $this->gateway->execute($status);
-    
+
         throw new HttpResponse('OK', 200);
     }
 
@@ -65,7 +67,6 @@ class NotifyAction extends GatewayAwareAction implements ActionInterface
     {
         return
             $request instanceof Notify &&
-            $request->getModel() instanceof \ArrayObject
-            ;
+            $request->getModel() instanceof \ArrayObject;
     }
 }
