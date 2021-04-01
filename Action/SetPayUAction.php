@@ -187,7 +187,7 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
      */
     private function setProducts($model, $order)
     {
-    	if($model instanceof ArrayObject) {
+    	if ($model instanceof ArrayObject) {
     	    $model = $model->getArrayCopy();
 	}
     	  
