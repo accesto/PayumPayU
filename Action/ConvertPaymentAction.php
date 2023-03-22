@@ -38,7 +38,7 @@ class ConvertPaymentAction extends GatewayAwareAction
         $details['description'] = $order->getDescription();
         $details['client_email'] = $order->getClientEmail();
         $details['client_id'] = $order->getClientId();
-        $details['customerIp'] = array_key_exists('REMOTE_ADDR', $_SERVER) ? $_SERVER['REMOTE_ADDR'] : null;
+        $details['customerIp'] = isset($details['customerIp']) ? $details['customerIp'] : (array_key_exists('REMOTE_ADDR', $_SERVER) ? $_SERVER['REMOTE_ADDR'] : null);
         $details['creditCardMaskedNumber'] = $order->getCreditCard() ? $order->getCreditCard()->getMaskedNumber() : null;
         $d = $order->getDetails();
         if (isset($d['recurring']) && $d['recurring']) {
