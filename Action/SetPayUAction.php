@@ -266,7 +266,7 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
     private function setRecurringPayment($openPayU, $model, $order)
     {
         $payMethods = $openPayU->retrievePayMethods($model['client_id'], $model['client_email'])->getResponse();
-        if (!isset($payMethods->cardTokens)) {
+        if (!isset($payMethods->cardTokens) || !is_array($payMethods->cardTokens)) {
             throw new \InvalidArgumentException('Cannot make this recurring payment. Token for user does not exist');
         }
         $cardToken = $this->findPrefferedToken($payMethods->cardTokens,
