@@ -45,6 +45,8 @@ class PayUGatewayFactoryTest extends \PHPUnit_Framework_TestCase
             'pos_id' => 'aName',
             'signature_key' => 'aPass',
             'environment' => 'secure',
+            'oauth_client_id' => 'aN',
+            'oauth_secret' => 'aS',
         ));
         $this->assertInstanceOf('Payum\Core\Gateway', $gateway);
         $this->assertAttributeNotEmpty('apis', $gateway);
@@ -91,7 +93,7 @@ class PayUGatewayFactoryTest extends \PHPUnit_Framework_TestCase
         $this->assertInternalType('array', $config);
         $this->assertArrayHasKey('payum.default_options', $config);
         $this->assertEquals(
-            array('environment' => 'secure', 'pos_id' => '', 'signature_key' => ''),
+            array('environment' => 'secure', 'pos_id' => '', 'signature_key' => '', 'oauth_client_id' => '', 'oauth_secret' => ''),
             $config['payum.default_options']
         );
     }
@@ -114,7 +116,7 @@ class PayUGatewayFactoryTest extends \PHPUnit_Framework_TestCase
      * @test
      *
      * @expectedException \Payum\Core\Exception\LogicException
-     * @expectedExceptionMessage The pos_id, signature_key fields are required.
+     * @expectedExceptionMessage The pos_id, signature_key, oauth_client_id, oauth_secret fields are required.
      */
     public function shouldThrowIfRequiredOptionsNotPassed()
     {
