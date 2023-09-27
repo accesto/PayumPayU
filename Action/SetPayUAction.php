@@ -190,8 +190,8 @@ class SetPayUAction implements ApiAwareInterface, ActionInterface, GenericTokenF
         if ($model instanceof ArrayObject) {
             $model = $model->getArrayCopy();
         }
-    	  
-        if (!array_key_exists('products', $model) || count($model['products']) == 0) {
+
+        if (!isset($model['products']) || count($model['products']) == 0) {
             $order['products'] = array(
                 array(
                     'name' => $model['description'],
